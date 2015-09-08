@@ -1,4 +1,4 @@
-/*Equipment design and all documents:  Copyright August 2015 Pierre ROUZEAU .   
+/*Equipment design and all documents:  Copyright August-sept 2015 Pierre ROUZEAU .   
 Equipment  license : OHL V1.2     Documents licence : CC BY-SA
 
 GEARED EXTRUDER for the  RepRapPro printer Fisher Delta 
@@ -8,11 +8,11 @@ This extruder is specifically designed to fit in the tight space of the fisher (
 A template to position the extruder is supplied. Be careful, the play between arms and motor with all carriages at top is less than 2mm (but your carriage are not supposed to go banging the supports, no ?)
 The connection of the bowden is done with the specific RepRapPro 5mm brass insert. If needed, you could thread for another connection.
 
-This is mechanics, so your machine shall be well calibrated ans shall produce accurate dimensions. Gears (especially the pinion, shall be printed relatively slowly (50mm/sec) to produce more accurate teeth profile). Layer 0.2 for the gears. layers 0.2 or 0.25 for base and lever.
+This is mechanics, so your machine shall be well calibrated and shall produce accurate dimensions. Gears (especially the pinion, shall be printed relatively slowly (50mm/sec) to produce more accurate teeth profile). Layer 0.2 for the gears. layers 0.2 or 0.25 for base and lever. You shall check that your printer have the same dimensions in X and Y if you want your gears being circular without hard point. The Fisher tend to create quite significant X/Y differences if the bed is tilted, which are not corrected by the calibration software.
 Printed in PETG on the Fisher, I really don't recommend to print it in PLA, that may be delicate to assemble without broke anything and there will be problem with the stepper temperature. ABS may be usable (but cannot be printed on a standard Fisher).
-Recommended PETG yet: Reprapper. eSun PETG is NOT recommended (unworkable without this geared extruder due to poor winding, so egg and chicken problem here).
+Recommended PETG yet: Reprapper. eSun PETG is NOT recommended (My first esun spool was unworkable without this geared extruder due to poor winding, so egg and chicken problem here).
 Do NOT Forget to activate support in your slicer for the base part. I forget it once for the prototype, then again for the final version (...).
-It is an entirely original design, however the gears of the Ormerod extruder were reused (and slightly enlarged) and I get the idea to have the filament in the pressure lever from Ryan Carlyle extruder.
+It is an entirely original design, however the gears of the Ormerod extruder were reused (and slightly widened) and I get the idea to have the filament in the pressure lever from Ryan Carlyle extruder B'struder.
 Driven by default  RepRapPro stepper 2.2 kg.cm
 Assembly described here :
 rouzeau.net/Print3D/FisherExtruder
@@ -33,10 +33,15 @@ Printed parts (see program below):
 - Base : N°2
 - Lever : N°3
 - Large gear : N°4
-- pinion : N°5
-- Lever pushing pad : N°6
-- template/screw holder for panel fixation : N°7
+- Pinion : N°5,6,7 (three different sizes, smaller to larger)
+- Lever pushing pad : N°8
+- template/screw holder for panel fixation : N°9
 - tongue for Bowden brass end (original could be reused)
+
+Note there is 3 size for the pinions, to adapt with minimum play. There won't be too much wear if there is play in gears, but that makes clik-clak noises during retract. 
+  There shall be no hard point while rotating manually the thumbwheel. Most probably the size 0 (theoretical value) will be too small if your gears are printed carefully. 
+  If you print pinion alone, you can print two in the same time as one, because the printing time is dictated by the cooling time between layers (25 sec. for PETG), so you could make size1 and size2. 
+  
 */
 
 include <PRZutility.scad>
@@ -52,11 +57,15 @@ if (qpart) {
   else if (qpart==2) rot (0,-90) base(); // extruder chassis
   else if (qpart==3) rot (90) rot(-lvang-angflat) lever();  
   else if (qpart==4) rot (0,-90)  lgear2();  // gear wheel  
-  else if (qpart==5) rot (0,-90)  sgear2(); // pinion  
-  else if (qpart==6) rot (-tsang+90)  pushpad(); // spring pusher
-  else if (qpart==7) motorlink();
+  else if (qpart==5) rot (0,-90)  sgear2(); // pinion  size '0' (large play-no use)
+  else if (qpart==6) rot (0,-90)  sgear2(1);// pinion  size '1' (less play)
+  else if (qpart==7) rot (0,-90)  sgear2(2);// pinion  size '2' (even less play)  
+  else if (qpart==8) rot (-tsang+90)  pushpad(); // spring pusher
+  else if (qpart==9) motorlink();
 }
 
+//cylz (45,10, 0,0,2);
+//cylz (14.5,5, 0,0,15);
 
 //-- do not touch if you don't know ----------------------------------
 diamBB = 9.9; // 623 bearing
@@ -392,6 +401,8 @@ module lgear2() {
   }    
 }
 
+//cylz (14, 25);
+
 module sgear() { // no longer used - prefer sgear2
   difference () {
     union() {
@@ -421,23 +432,26 @@ module sgear() { // no longer used - prefer sgear2
 } 
 
 
-module sgear2() {
+module sgear2(size=0) {
+scale1 = (size==2)?1.07:1;       // diameter = theo size +1 mm 
+scale2 = (size==1)?1.04:scale1;  // diameter = theo size +0.6mm
   difference () {
     union() {
       cylx (7,20, 1); // because of STL hole chamfer make a groove
       tsl (10.2)
-      scale ([1,1,1])
+      scale ([1,scale2,scale2])
         tsl (3.7,-55.89,67.25)  rot (0,90) import("ormerod_small-gear.stl");   
       hull() {  
-        cylx (12, 12);
+        cylx (11, 12);
+        cylx (12, 1,  7.5);
         dmirrorz () 
-          cylx (4, 8.3,  0, 7, 3.9);
+          cylx (4, 2.3,  6, 7, 3.9);
         dmirrorz () 
-          cylx (4, 10.3,  3, 6.2, 2.2);
+          cylx (2, 1,    0,7, 3.9);
       }
       hull() {  
         cylx (12,6, 7.5);
-        cylx (17.1,1, 13.3,0,0, 40);
+        cylx (18,0.5, 13.8,0,0, 40);
         dmirrorz () 
           cylx (4, 4,  7.5, 7, 3.9);
       }
@@ -446,18 +460,16 @@ module sgear2() {
     tsl (-0.1) // chamfer bottom
       rot (0,90) cylinder (d1=5.8, d2=5, h=0.6);
     tsl (21.5) // chamfer top
-     rot (0,90) cylinder (d1=5, d2=5.8, h=0.6);
+     rot (0,90)  cylinder (d1=5, d2=5.8, h=0.6);
     cyly (3, 10,  9.5, 0);
     hull() {
-      cubey (1,2.5,5.7, 1,5-1.2);  // nut space - tapered inlet
-      cubey (14,2.5,5.4, -1+5.3,5-1.2);  // nut space
-      // beware, that is enlarged by 'holeplay' parameter
-      cyly (0.5,2.5,  2.7+10,5-1.2,0);
+      cubey (1,2.5,5.85,       1,5-1.2);  // nut space - tapered inlet
+      cubey (14,2.5,5.55, -1+5.3,5-1.2);  // nut space
+      cyly  (0.5,2.5,     2.7+10,5-1.2);
     }  
   }
   // cylx (12,22, 0,8);
 }
-
 
 //-- utility -------------------------------------------------
 

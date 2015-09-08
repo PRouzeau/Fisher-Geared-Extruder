@@ -32,27 +32,36 @@ bithole=0; // for routing openings
 // cylinder, first parameter is diameter, then extrusion length
 // Negative Diameter CENTER extrusion, Negative extrusions are Ok
 // usage: cyly (12,-40); -- cyly (12,-40, 8, 10, 9, 6); (hexagon)
-module cylx (diam,length,x=0,y=0,z=0,div=$fn) {//Cylinder on X axis
+module cylx (diam,length,x=0,y=0,z=0,div=$fn, fh=1) {//Cylinder on X axis
+  // fh is a coefficient for holeplay - default 1 for cylinders
+  if (fh==false) 
+    echo ("cyly : change holeplay parameter to numeric");
   mv=(length<0)?length:0;					// not ok if diam AND length are negative. who cares ? 
   center=(diam<0)?true:false;	
   translate([x+mv,y,z])
     rotate([0,90,0])
-      cylinder (d=(abs(diam)+holeplay), h=abs(length), $fn=div, center=center);
+      cylinder (d=(abs(diam)+fh*holeplay), h=abs(length), $fn=div, center=center);
 }
 
-module cyly (diam,length,x=0,y=0,z=0,div=$fn) {//Cylinder on Y axis
+module cyly (diam,length,x=0,y=0,z=0,div=$fn, fh=1) {//Cylinder on Y axis
+  // fh is a coefficient for holeplay - default 1 for cylinders
+  if (fh==false) 
+    echo ("cyly : change holeplay parameter to numeric");
   mv=(length<0)?length:0; // accept negative height		
   center=(diam<0)?true:false;	
   translate([x,y+mv,z]) 
     rotate([-90,0,0])
-      cylinder (d=(abs(diam)+holeplay), h=abs(length), $fn=div, center=center);
+      cylinder (d=(abs(diam)+fh*holeplay), h=abs(length), $fn=div, center=center);
 }
 
-module cylz (diam,height,x=0,y=0,z=0,div=$fn) { // Cylinder  on Z axis
+module cylz (diam,height,x=0,y=0,z=0,div=$fn, fh=1) { // Cylinder  on Z axis
+  // fh is a coefficient for holeplay - default yes for cylinders
+  if (fh==false) 
+    echo ("cyly : change holeplay parameter to numeric");
   mv=(height<0)?height:0; 	// accept negative height	
   center=(diam<0)?true:false;	
   translate([x,y,mv+z]) 
-    cylinder (d=(abs(diam)+holeplay), h=abs(height), $fn=div, center=center);
+    cylinder (d=(abs(diam)+fh*holeplay), h=abs(height), $fn=div, center=center);
 }
 
 solidxy = [1,1,0];
@@ -75,25 +84,43 @@ module mcube (sx,sy,sz,center=false,x=0,y=0,z=0, solid=[-1,-1,-1]) { // accept n
 //holeplay=2;
 //mcube (20,30,40,false,0,0,0,[1,1,0]);
 
-module cubex(xd,yd,zd,x=0,y=0,z=0) { // centered on y anz z, not centered on x, negative extrusion possible
+module cuben (sx,sy,sz,x=0,y=0,z=0, center=false) { // same as mcube, but with center after position, for homogeneity with cuben modules - NO holeplay so NO solid
+  cfc=(center)?0:1; // no play movement if centered
+  mx=(sx<0)?cfc*sx:0; 
+  my=(sy<0)?cfc*sy:0;
+  mz=(sz<0)?cfc*sz:0;
+  tsl (x+mx,y+my,z+mz)
+    cube ([abs(sx),abs(sy),abs(sz)], center=center);
+}
+
+module cubex(xd,yd,zd,x=0,y=0,z=0, fh=0) { // centered on y anz z, not centered on x, negative extrusion possible
+  // fh is a coefficient for holeplay - default 0 for cubes
+  if (fh==true) 
+    echo ("cubex : change holeplay parameter to numeric");
   cfh = (xd<0)?-1:1;
   mx=(xd<0)?xd:0;
-  tsl (mx+x,y-yd/2-holeplay/2,z-zd/2-holeplay/2)
-    cube ([abs(xd),abs(yd)+holeplay,abs(zd)+holeplay]);
+  tsl (mx+x,y-yd/2-fh*holeplay/2,z-zd/2-fh*holeplay/2)
+    cube ([abs(xd),abs(yd)+fh*holeplay,abs(zd)+fh*holeplay]);
 }
 
-module cubey(xd,yd,zd,x=0,y=0,z=0) { // centered on x anz z, not centered on y
+module cubey(xd,yd,zd,x=0,y=0,z=0, fh=0) { // centered on x anz z, not centered on y
+  // fh is a coefficient for holeplay - default 0 for cubes
+  if (fh==true) 
+    echo ("cubey : change holeplay parameter to numeric");  
   cfh = (yd<0)?-1:1;
   my=(yd<0)?yd:0;
-  tsl (x-xd/2-holeplay/2,my+y,z-zd/2-holeplay/2)
-    cube ([abs(xd)+holeplay,abs(yd),abs(zd)+holeplay]);
+  tsl (x-xd/2-fh*holeplay/2,my+y,z-zd/2-fh*holeplay/2)
+    cube ([abs(xd)+fh*holeplay,abs(yd),abs(zd)+fh*holeplay]);
 }
 
-module cubez(xd,yd,zd,x=0,y=0,z=0) { // centered on x anz y, not centered on z
-  cfh = (zd<0)?-1:1;
+module cubez(xd,yd,zd,x=0,y=0,z=0, fh=0) { // centered on x anz y, not centered on z
+  // fh is a coefficient for holeplay  - default 0 for cubes
+  if (fh==true) 
+    echo ("cubez : change holeplay parameter to numeric");
+  cfh = (zd<0)?-1:1; // what is done with that ??? 
   mz=(zd<0)?zd:0;
-  tsl (x-xd/2-holeplay/2,y-yd/2-holeplay/2,mz+z)
-    cube ([abs(xd)+holeplay,abs(yd)+holeplay,abs(zd)]);
+  tsl (x-xd/2-fh*holeplay/2,y-yd/2-fh*holeplay/2,mz+z)
+    cube ([abs(xd)+fh*holeplay,abs(yd)+fh*holeplay,abs(zd)]);
 }
 
 /*extrusion of rounded rectangular profile (centered), first param radius. p1 & p2 = rectangular side size (not half as above)
@@ -133,33 +160,33 @@ module rcubez (radius,length,x,y,z=0) {
 
 //tubex (20,2,-100, 50,60,80);
 
-module tubex (diam, thickness, length, x=0,y=0,z=0, div=$fn) {
+module tubex (diam, thickness, length, x=0,y=0,z=0, div=$fn, fh=1) {
   dt = (length<0)?-1:1;
   dtx = (diam<0)?0:dt;
   cf = (diam<0)?-1:1;
   difference() {
-     cylx(cf*(abs(diam)-holeplay), length, x,y,z, div); // neutralise the holeplay 
-     cylx(cf*(abs(diam)-2*thickness), length+dt+dt, x-dtx,y,z, div);
+     cylx(cf*abs(diam), length, x,y,z, div, 0); // neutralise the holeplay 
+     cylx(cf*(abs(diam)-2*thickness), length+dt+dt, x-dtx,y,z, div, fh);
    }  
 }
 
-module tubey (diam, thickness, length, x=0,y=0,z=0,div=$fn) {
+module tubey (diam, thickness, length, x=0,y=0,z=0,div=$fn, fh=1) {
   dt = (length<0)?-1:1;
   dty = (diam<0)?0:dt;
   cf = (diam<0)?-1:1;
   difference() {
-     cyly(cf*(abs(diam)-holeplay), length, x,y,z,div);
-     cyly(cf*(abs(diam)-2*thickness), length+dt+dt, x,y-dty,z,div);
+     cyly(cf*abs(diam), length, x,y,z,div, 0);
+     cyly(cf*(abs(diam)-2*thickness), length+dt+dt, x,y-dty,z,div, fh);
    }  
 }
 
-module tubez (diam, thickness, length, x=0,y=0,z=0, div=$fn) {
+module tubez (diam, thickness, length, x=0,y=0,z=0, div=$fn, fh) {
   dt = (length<0)?-1:1;
   dtz = (diam<0)?0:dt;
   cf = (diam<0)?-1:1;
   difference() {
-     cylz(cf*(abs(diam)-holeplay), length, x,y,z, div);
-     cylz(cf*(abs(diam)-2*thickness), length+dt+dt, x,y,z-dtz, div);
+     cylz(cf*abs(diam), length, x,y,z, div,0);
+     cylz(cf*(abs(diam)-2*thickness), length+dt+dt, x,y,z-dtz, div, fh);
    }  
 }
 
@@ -254,59 +281,57 @@ module slotzx(slotlength, interval, totlength, thkplate,z=0,x=0) {
   }
 }
 
-module conex (diam1, diam2, ht, x=0,y=0,z=0,div=$fn) {
+module conex (diam1, diam2, ht, x=0,y=0,z=0,div=$fn, fh=1) {
   mv = (ht<0)?ht:0;
   di1 = (ht<0)?diam2:diam1;
   di2 = (ht<0)?diam1:diam2;
   translate([x+mv,y,z])
   rotate([0,90,0])
-    cylinder (d1=di1+holeplay, d2=di2+holeplay, h=abs(ht));  
+    cylinder (d1=di1+fh*holeplay, d2=di2+fh*holeplay, h=abs(ht), $fn=div);  
 }
 
-module coney (diam1, diam2, ht, x=0,y=0,z=0,div=$fn) {
+module coney (diam1, diam2, ht, x=0,y=0,z=0,div=$fn, fh=1) {
   mv = (ht<0)?ht:0;
   di1 = (ht<0)?diam2:diam1;
   di2 = (ht<0)?diam1:diam2;
   translate([x,y+mv,z])
   rotate([-90,0])
-    cylinder (d1=di1+holeplay, d2=di2+holeplay, h=abs(ht));  
+    cylinder (d1=di1+fh*holeplay, d2=di2+fh*holeplay, h=abs(ht),$fn=div);  
 }
 
-
-
-module conez (diam1, diam2, ht,  x=0,y=0,z=0,div=$fn) {
+module conez (diam1, diam2, ht,  x=0,y=0,z=0,div=$fn, fh=1) {
   mz  = (ht<0)?ht:0;
   di1 = (ht<0)?diam2:diam1;
   di2 = (ht<0)?diam1:diam2;
   translate ([x,y,z+mz])
-    cylinder (d1=di1+holeplay, d2=di2+holeplay, h=abs(ht));  
+    cylinder (d1=di1+fh*holeplay, d2=di2+fh*holeplay, h=abs(ht),$fn=div);  
 } 
 
 //coney (10, 5, 3);
 //sconey (-10, 5, -3);
 
-module cconex (diam1, diam2, ht, htcyl=-1, x=0,y=0,z=0,div=$fn) {
+module cconex (diam1, diam2, ht, htcyl=-1, x=0,y=0,z=0,div=$fn, fh=1) {
   // if htcyl negative, go from reference plan
   // if htcyl positive, cone atop cylinder
-  mcyl = (htcyl>0) ?htcyl*sign(ht):0;
-  tsl (mcyl) conex (diam1, diam2, ht, x,y,z,div);
-  cylx (diam1, abs(htcyl)*sign(ht)*sign(htcyl),x,y,z, div);
+  mcyl = (htcyl>0) ?(htcyl-0.02)*sign(ht):-0.02*sign(ht);
+  tsl (mcyl) conex (diam1, diam2, ht, x,y,z,div, fh);
+  cylx (diam1, abs(htcyl)*sign(ht)*sign(htcyl),x,y,z, div, fh);
 }
 
-module cconey (diam1, diam2, ht, htcyl=-1, x=0,y=0,z=0,div=$fn) {
+module cconey (diam1, diam2, ht, htcyl=-1, x=0,y=0,z=0,div=$fn, fh=1) {
   // if htcyl negative, go from reference plan
   // if htcyl positive, cone atop cylinder
-  mcyl = (htcyl>0) ?htcyl*sign(ht):0;
-  tsl (0,mcyl) coney (diam1, diam2, ht, x,y,z,div);
-  cyly (diam1, abs(htcyl)*sign(ht)*sign(htcyl),x,y,z, div);
+  mcyl = (htcyl>0) ?(htcyl-0.02)*sign(ht):-0.02*sign(ht);
+  tsl (0,mcyl) coney (diam1, diam2, ht, x,y,z,div, fh);
+  cyly (diam1, abs(htcyl)*sign(ht)*sign(htcyl),x,y,z, div, fh);
 }
 
-module cconez (diam1, diam2, ht, htcyl=-1, x=0,y=0,z=0,div=$fn) {
+module cconez (diam1, diam2, ht, htcyl=-1, x=0,y=0,z=0,div=$fn, fh=1) {
   // if htcyl negative, go from reference plan
   // if htcyl positive, cone atop cylinder
-  mcyl = (htcyl>0) ?htcyl*sign(ht):0;
-  tsl (0,0,mcyl) conez (diam1, diam2, ht, x,y,z,div);
-  cylz (diam1, abs(htcyl)*sign(ht)*sign(htcyl),x,y,z, div);
+  mcyl = (htcyl>0) ?(htcyl-0.02)*sign(ht):-0.02*sign(ht);
+  tsl (0,0,mcyl) conez (diam1, diam2, ht, x,y,z,div, fh);
+  cylz (diam1, abs(htcyl)*sign(ht)*sign(htcyl),x,y,z, div, fh);
 }
 
 // Scone routines are deprecated and shall be replaced by ccone
@@ -314,19 +339,19 @@ module sconex (diaext, x=0,y=0,z=0,div=$fn) {
   echo("sconex module deprecated, replaced by cconex");
   dir = sign (diaext);
   conex (abs(diaext), abs(diaext)*0.5, diaext*0.18, x-0.05*dir,y,z,div);
-  cylx (abs(diaext), -diaext*0.2, x,y,z);  
+  cylx (abs(diaext), -diaext*0.2, x,y,z, div);  
 }
 module sconey (diaext, x=0,y=0,z=0,div=$fn) {
   echo("sconey module deprecated, replaced by cconey");
   dir = sign (diaext);
   coney (abs(diaext), abs(diaext)*0.5, diaext*0.18, x,y-0.05*dir,z,div);
-  cyly (abs(diaext), -diaext*0.2, x,y,z);  
+  cyly (abs(diaext), -diaext*0.2, x,y,z, div);  
 }
 module sconez (diaext, x=0,y=0,z=0,div=$fn) {
   echo("sconez module deprecated, replaced by cconez");
   dir = sign (diaext);
   conez (abs(diaext), abs(diaext)*0.5, diaext*0.18, x,y,z-0.05*dir,div);
-  cylz (abs(diaext), -diaext*0.2, x,y,z);  
+  cylz (abs(diaext), -diaext*0.2, x,y,z, div);  
 }
 
 module filletx(rad, lg, x=0,y=0,z=0) {
