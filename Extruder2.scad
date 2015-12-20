@@ -1,23 +1,30 @@
-/*Equipment design and all documents:  Copyright August-sept 2015 Pierre ROUZEAU .   
+/*Equipment design and all documents:  Copyright August-dec 2015 Pierre ROUZEAU .   
 Equipment  license : OHL V1.2     Documents licence : CC BY-SA
 
-GEARED EXTRUDER for the  RepRapPro printer Fisher Delta 
-Use the specific M3 hobbed insert of RepRapPro (for Ormerod and other printers) but not the original hobbed insert of the Fisher.
+GEARED EXTRUDER - was initially designed for the  RepRapPro printer Fisher Beta, then extended for other use. 
+It is a bit more complex than Fisher 1 extruder, but have following advantages :
+- Better filament path while spool is on printer top
+- Larger gear ratio (3.1 instead of 2), so more power
+- Filament pressure adjustment accessible from top
+- Could be opened from top for insert cleaning
+- Shorter Bowden tube due to better path
+Use the Fisher 1 kit with specific M3 hobbed insert of RepRapPro (used on all their printers).
 Spring is the one of the Fisher extruder: external diameter 6.5mm, wire 0.8mm, length 7.5 mm
-This extruder is specifically designed to fit in the tight space of the fisher (in the fisher the extruder is inside the printer, between the arms), but could be used for any printer with 'Bowden' hotend
-A template to position the extruder is supplied. Be careful, the play between arms and motor with all carriages at top is less than 2mm (but your carriage are not supposed to go banging the supports, no ?)
+This extruder is specifically designed to fit in the tight space of the fisher (in the fisher the extruder is inside the printer, between the arms), but could be used for any printer with 'Bowden' hotend. There is an alternative with top mount
+A template to position the extruder on Fisher is supplied. Be careful, the play between arms and motor with all carriages at top is less than 2mm (but your carriage are not supposed to go banging the supports, no ?)
 The connection of the bowden is done with the specific RepRapPro 5mm brass insert. If needed, you could thread for another connection.
 
 This is mechanics, so your machine shall be well calibrated and shall produce accurate dimensions. Gears (especially the pinion, shall be printed relatively slowly (50mm/sec) to produce more accurate teeth profile). Layer 0.2 for the gears. layers 0.2 or 0.25 for base and lever. You shall check that your printer have the same dimensions in X and Y if you want your gears being circular without hard point. The Fisher tend to create quite significant X/Y differences if the bed is tilted, which are not corrected by the calibration software.
-Printed in PETG on the Fisher, I really don't recommend to print it in PLA, that may be delicate to assemble without broke anything and there will be problem with the stepper temperature. ABS may be usable (but cannot be printed on a standard Fisher).
-Recommended PETG yet: Reprapper. eSun PETG is NOT recommended (My first esun spool was unworkable without this geared extruder due to poor winding, so egg and chicken problem here).
+    Note that DC42 fork of RRP firmware implement M579 command for scale correction since version 1.09m. see http://forums.reprap.org/read.php?146,593668
+Printed in PETG on the Fisher, I really don't recommend to print it in PLA, that may be delicate to assemble without braking anything and there will be problem with the stepper temperature. ABS may be usable (but cannot be printed on a standard Fisher).
+Recommended PETG yet: Reprapper. eSun PETG is NOT recommended (require very high temp and have many winding problems).
 Do NOT Forget to activate support in your slicer for the base part. I forget it once for the prototype, then again for the final version (...).
 It is an entirely original design, however the gears of the Ormerod extruder were reused (and slightly widened) and I get the idea to have the filament in the pressure lever from Ryan Carlyle extruder B'struder.
 Driven by default  RepRapPro stepper 2.2 kg.cm
 Assembly described here :
 rouzeau.net/Print3D/FisherExtruder
 BOM 
-- 1 M3x30 Hex head screw for the hobbed drive
+- 1 M3x25 Hex head screw for the hobbed drive - in fisher 1 kit
 - 3 M3x35 countersunk screws for the stepper assembly on panel (thk 3mm)
 - 2 M3x20 countersunk screws for lever articulation and push bearing
 - 2 M3x40 screws (hex or cap head) for tensioner
@@ -25,15 +32,15 @@ BOM
 - ordinary M3 nuts (lock is done with glue/resin)
 - 1 medium size washer (large gear)
 - 6 small sizes washer (4 for large gear and 2 for bearing)
-- 3 bearings 623 (10x3x5)
+- 3 bearings 623 (10x3x5) - option for 1*623 and 2*MR93 (Fisher 1)
 - nut locking glue
-- 1 M3 RepRapPro hobbed insert (dia 8) (only sold by them)
+- 1 M3 RepRapPro hobbed insert (dia 8) (only sold by them - in Fisher 1 kit)
 - 1 spring diam ext 6.5mm, wire 0.8mm, len 7.5 mm (salvaged from Fisher extruder)
 Printed parts (see program below):
-- Base : N°2
+- Base : N°2 with 623 bearings, 22 with MR93 bearings, 12 with top mount and 623 bearings
 - Lever : N°3
-- Large gear : N°4
-- Pinion : N°5,6,7 (three different sizes, smaller to larger)
+- Large gear (34 teeth) : N°4
+- Pinion (11 teeth): N°5,6,7 (three different sizes, smaller to larger)
 - Lever pushing pad : N°8
 - template/screw holder for panel fixation : N°9
 - tongue for Bowden brass end (original could be reused)
@@ -50,11 +57,15 @@ insertdia = 5.1; // bowden brass insert diam 5
 inletTube = 3.8;  //inlet tube diameter  if =0 -> inlet is a cone
 htot = 25;      // columns height - this is the minimum for shaft clearance
 
-qpart=1;
+qpart=21;
 
 if (qpart) {
-  if (qpart==1) tsl (-25,-4,36+8) rot (-90) extruder(); // whole extruder
+  if (qpart==1) tsl (-25,-4,36+8) rot (-90) extruder(fasle); // whole extruder
+  if (qpart==11) tsl (-25,-4,36+8) rot (8)extruder(true); // whole extruder with top mount 
+  if (qpart==21) tsl (-25,-4,36+8) rot (8)extruder(false,true); // option Fisher 1 (bearing MR93)
   else if (qpart==2) rot (0,-90) base(); // extruder chassis
+  else if (qpart==12) rot (0,-90) base(true); // extruder chassis - top mount
+  else if (qpart==22) rot (0,-90) base(false,true); // extruder chassis - MR93 bearings
   else if (qpart==3) rot (90) rot(-lvang-angflat) lever();  
   else if (qpart==4) rot (0,-90)  lgear2();  // gear wheel  
   else if (qpart==5) rot (0,-90)  sgear2(); // pinion  size '0' (large play-no use)
@@ -68,7 +79,6 @@ if (qpart) {
 //cylz (14.5,5, 0,0,15);
 
 //-- do not touch if you don't know ----------------------------------
-diamBB = 9.9; // 623 bearing
 
 springhole = 7; // spring 6.5 mm
 boltspace = 10;
@@ -93,7 +103,6 @@ lvang=35;
 angflat = -15;
 tsang = lvang-6;
 
-
 holeplay = 0.15; // diameter increase for all cylinders (internals/external) and off-axis dimension increase for cuben primitives. Not sufficient for small vertical holes.
    //Beware that this increase is the same whatever the axis, so for vertical cylinder holes, you may add other clearance
 
@@ -104,7 +113,6 @@ diamNut4 = 8.1; // checked
 //distaxe = sqrt ((hobby-31/2)*(hobby-31/2)+(hobbz-31/2)*(hobbz-31/2)) ;
 // echo (distaxe=distaxe); // check axis/axis distance conformity with Ormerod gears
 
-*breaktest();
 *pan();
 
 module motorlink() {
@@ -156,20 +164,21 @@ module pan() {   // not used - was for panel placement
 }
  
 
-module extruder() {
+module extruder(topmount=false, MR93=false) {
 /*  import ("ormerod_extruder-drive-block.stl"); // ormerod extruder imported for gear geometry check
   color ("red") cylz (-8.9, 66, 24.72,71.12);
   color ("red") cylz (-5.8, 66, 50.27,55.62);
 */ 
+  BBref = MR93?"MR93":"623";
   dist2 = sqrt(pow(50.27-24.72,2) +pow(71.12-55.62,2));
   //echo (dist2 = dist2); // distance between axis
 
   tsl (17.5,hobby,hobbz) rot (-22) // -22 -> motor bolt -88:lever bolt
     color("green") lgear2();
-  tsl (11.5,15.5,15.5) 
-    sgear();
+  tsl (2.5,15.5,15.5) 
+    sgear2();
   
-  base();
+  base(topmount,MR93);
   tsl (0, levery, leverz) 
     rot (0) /// rotate the lever
       tsl (0, -levery, -leverz) {
@@ -185,7 +194,8 @@ module extruder() {
   pushpad();    
   color ("grey")  { 
     cylx (-8,6, thk/2,hobby,hobbz);
-    cylx (3,25, -2,hobby,hobbz);
+    cylx (3,25, -4,hobby,hobbz);
+    cylx (diamNut3,2.5, -3,hobby,hobbz, 6);
     cylx (-3,20, thk/2,levery,leverz);
     rot (tsang) 
       tsl (thk/2)   
@@ -196,14 +206,16 @@ module extruder() {
   }  
   tsl (thk/2)
     dmirrorx () 
-      BBx ("623", 1, 4,hobby,hobbz);
+      BBx (BBref, 1, 4,hobby,hobbz);
   tsl (0, 31/2, 31/2)
     rot(0,90)
       nema17 (34);
 }
 
-module base() {
+module base(topmount=false, MR93=false) {
   thk2 = 5;
+  topwd = 10;
+  diamBB = MR93?8.9:9.9;
   difference () {
   union() {
     hull() {
@@ -223,10 +235,42 @@ module base() {
       cylx  (3, thk,  0,-7.2,18.5);
       cylx  (3, thk,  0,-2,30);
     }
-    cylx (8,htot,0,0,31);
-    cylx (8,htot,0,31);
-    //cylx (9,12,0,31,31);
-    cylx (8,htot,0,31,31);
+    if (topmount) difference () {
+      union() {
+        cylx (8,7.8, 0,31);
+        hull() {
+          cylx (8,topwd, 0,31,31);
+          duply (10)
+            cylx (2,topwd, 0,25.5,36);
+        }  
+        hull() {
+          cylx (8,topwd, 0,0,31);
+          duply (10)
+            cylx (2,topwd, 0,-1.5,39);
+        }
+        tsl (0,31,31) 
+          rot (-8) tsl (0,-15,5) {
+            hull() {
+              cubex (1,52,3.5);
+              dmirrory() 
+                cylz (topwd, 3.5,  topwd/2,23, -3.5/2);
+            }  
+            cubex (1,38,5, 0,0,-2);
+          }      
+        } // then whats removed
+        tsl (0,31,31) 
+          rot (-8) tsl (0,-15,5)  
+            dmirrory() {
+               cylz (-3, 66,  topwd/2,23);
+               cylz (8, -8,  topwd/2,23, -3.5/2);
+            }
+    }
+    else { // columns for panel attach
+      cylx (8,htot,0,0,31);
+      cylx (8,htot,0,31);
+      //cylx (9,12,0,31,31);
+      cylx (8,htot,0,31,31);
+    }  
   } // then whats removed
     tsl (thk-1.7)
       rot (0,90) cylinder (d2=7, d1=2.5, h=1.8); 
@@ -360,77 +404,38 @@ module pushpad() {
 // -- Gears - STL from Ormerod extruder -----
 
 module lgear() {
-  tsl (0,-24.05,61.44) rot (0,90) import("ormerod_large-gear.stl");  
+  tsl (-0.12,-24.05,61.44) rot (0,90) import("ormerod_large-gear.stl");  
 } 
 
-module lgear2() {
+module lgear2(hg=20) {
   difference () {
     union() {
       scale ([1.33,1,1]) lgear();  
-      cylx (12,22, 0.15,0,0, 50);
-      intersection () {  
-        union() {
-        for(i=[0:13]) 
-          rot(i*360/12)
-              hull() {
-                cylx (1, 23,  0.1, 0, 7);
-                dmirrory() 
-                  cylx (1, 23,  0.1, 2, 4);
-              }
+      cylx (12,hg, 0,0,0, 50);
+      for(i=[0:3]) rot(i*90)  
         hull() { // index
-          cylx (1, 23,  0.1, -10, 0);
+          cylx (1,3,    hg-3, -10, 0);
           dmirrorz() 
-            cylx (1, 23,  0.1, -4.2, 2);
-      }       
-        }      
-        rot (0,90)  cylinder (d1=3, d2=25, h=25);      
-      }      
+            cylx (1,12, hg-12,-4.2, 2);
+        }       
     } // then whats removed
     cylx (-2.95,66);
     hull() {
-      tsl (9-0.6)  // hexagon chamfer
+      tsl (6-0.6)  // hexagon chamfer
         rot (0,90) cylinder (d1=6, d2=7.3, h=2.6, $fn=6);
-      cylx (8,1, 22);  
+      cylx (8,1, hg);  
     }
-    tsl (9-3)  // hexagon
-      rot (0,90) cylinder (d=6, h=2.5, $fn=6);
+    cylx (diamNut3, 2.5,  3,0,0, 6); // nut space
     hull() { // enlarged hole for lever assembly and motor install.
-      cylx (-6.3,33, 0,14.8);  
-      cylx (-6.3,33, 0,13);  
+      cylx (-6.3,22, 0,14.8);  
+      cylx (-6.3,22, 0,13);  
     }  
-  }    
+  } 
+  
+  //cylx (2.9,6);
 }
 
 //cylz (14, 25);
-
-module sgear() { // no longer used - prefer sgear2
-  difference () {
-    union() {
-      scale ([1.1,1,1])
-        tsl (3.7,-55.89,67.25)  rot (0,90) import("ormerod_small-gear.stl");   
-      hull() {  
-        cylx (11,12, -6);
-        dmirrorz () 
-          cylx (4, 8.3,  -6, 6.7, 3.3);
-        dmirrorz () 
-          cylx (4, 10.3,  -6, 6.2, 2.2);
-      } 
-      cylx (11,15, -9);
-       tsl (4.5)
-       rot (0,90)
-       cylinder (d1=14.1, d2=10, h=1.5);
-    }  
-    cylx (-5, 66);
-    cyly (3, 10,  -0.5, 0);
-    hull() {
-      cubey (14,2.5,5.3, -11+5.3,5-1.2);  // nut space
-      cyly (0.5, 2.5, 2.7,5-1.2,0);
-    }  
-  }
-  *tsl (-5,1.96,-2.5) // flat - no longer used (set screw)
-    cube ([10, 2, 5]) ;
-} 
-
 
 module sgear2(size=0) {
 scale1 = (size==2)?1.07:1;       // diameter = theo size +1 mm 
@@ -517,18 +522,6 @@ module BB (type="623", orient=1) {
   else if (type=="MR93")  B(9,3,4,0,0,  orient); 
   else if (type=="MR103") B(10,3,4,0,0,orient); // same as 623 
 }
-
-
-module breaktest(){ // part to be breaked to test layer adhesion
-  mcube (22,22, 6, false);
-  mcube (15,10, 4, false, -15, 12);
-  mcube (15,10, 4, false, 22);
-  mcube (4,10, 20, false);
-  mcube (4,10, 20, false, 18,12);
-  mcube (10,4, 20, false, 12  );
-  mcube (10,4, 20, false, 0,18);
-};
-
 
 module nema17(lg=40) { // NEMA 17 stepper motor. - replace by STL ??
   color("grey")
