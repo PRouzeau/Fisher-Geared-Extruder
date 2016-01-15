@@ -180,7 +180,7 @@ module tubey (diam, thickness, length, x=0,y=0,z=0,div=$fn, fh=1) {
    }  
 }
 
-module tubez (diam, thickness, length, x=0,y=0,z=0, div=$fn, fh) {
+module tubez (diam, thickness, length, x=0,y=0,z=0, div=$fn, fh=1) {
   dt = (length<0)?-1:1;
   dtz = (diam<0)?0:dt;
   cf = (diam<0)?-1:1;
@@ -309,6 +309,70 @@ module conez (diam1, diam2, ht,  x=0,y=0,z=0,div=$fn, fh=1) {
 
 //coney (10, 5, 3);
 //sconey (-10, 5, -3);
+
+//cone3n
+//diam 1 & diam2 shall be > 0
+// if ht1 negative, ref is end of cylinder
+// then if ht2 negative, ref is end of cone
+// then if ht3 negative, ref is end of 2nd cylinder
+
+module cone3x (diam1, diam2, ht1, ht2, ht3=0, x=0,y=0,z=0,div=$fn, fh=1) {
+  mov1 = (ht1<0)?ht1:0;
+  mov2 = (ht2<0)?ht2+mov1:mov1;
+  mov3 = (ht3<0)?ht3+mov2:mov2;
+  tsl (mov3) {
+    cylx (diam1, abs(ht1)+0.02, x,y,z,div,fh);
+    tsl (abs(ht1)+x,y,z)
+      rot(0,90)
+        cylinder (d1=diam1+fh*holeplay, d2=diam2+fh*holeplay, h=abs(ht2), $fn=div); 
+    cylx (diam2, abs(ht3)+0.02, x+abs(ht1)+abs(ht2)-0.02,y,z,div,fh);
+  }  
+}
+
+module cone3y (diam1, diam2, ht1, ht2, ht3=0, x=0,y=0,z=0,div=$fn, fh=1) {
+  mov1 = (ht1<0)?ht1:0;
+  mov2 = (ht2<0)?ht2+mov1:mov1;
+  mov3 = (ht3<0)?ht3+mov2:mov2;
+  tsl (0,mov3) {
+    cyly (diam1, abs(ht1)+0.02, x,y,z,div,fh);
+    tsl (x, y+abs(ht1),z)
+      rot(-90)
+        cylinder (d1=diam1+fh*holeplay, d2=diam2+fh*holeplay, h=abs(ht2), $fn=div); 
+    cyly (diam2, abs(ht3)+0.02, x, y+abs(ht1)+abs(ht2)-0.02,z,div,fh);
+  }  
+}
+
+module cone3z (diam1, diam2, ht1, ht2, ht3=0, x=0,y=0,z=0,div=$fn, fh=1) {
+  mov1 = (ht1<0)?ht1:0;
+  mov2 = (ht2<0)?ht2+mov1:mov1;
+  mov3 = (ht3<0)?ht3+mov2:mov2;
+  tsl (0,0,mov3) {
+    cylz (diam1, abs(ht1)+0.02, x,y,z, div,fh);
+    tsl (x, y,z+abs(ht1))
+      cylinder (d1=diam1+fh*holeplay, d2=diam2+fh*holeplay, h=abs(ht2), $fn=div); 
+    cylz (diam2, abs(ht3)+0.02, x,y,z+abs(ht1)+abs(ht2)-0.02, div,fh);
+  }  
+}
+/*
+holeplay=0.2;
+cone3x (2, 4, 4, 2, 6);
+cone3x (2, 4, -4, 2, 6, 0,-8);
+cone3x (2, 4, -4, -2, 6,0,-16);
+cone3x (2, 4, -4, -2, -6,0,-24);
+cone3x (4, 2, -4, 2, -6,0,-32);
+
+cone3y (2, 4, 4, 2, 6,  0,0,0, $fn,0);
+cone3y (2, 4, -4, 2, 6, -8,0);
+cone3y (2, 4, -4, -2, 6,-16,0);
+cone3y (2, 4, -4, -2, -6,-24,0);
+cone3y (4, 2, -4, 2, -6,-32,0);
+
+cone3z (2, 4,  4, 2,  6,  20);
+cone3z (2, 4, -4, 2,  6,  20,-8);
+cone3z (2, 4, -4, -2, 6,  20,-16);
+cone3z (2, 4, -4, -2, -6, 20,-24);
+cone3z (4, 2, -4, 2,  -6, 20,-32);
+//*/
 
 module cconex (diam1, diam2, ht, htcyl=-1, x=0,y=0,z=0,div=$fn, fh=1) {
   // if htcyl negative, go from reference plan
